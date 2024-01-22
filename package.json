@@ -1,0 +1,16 @@
+{
+  "name": "project_b",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "npx vite",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "three": "^0.160.1",
+    "vite": "^5.0.12"
+  }
+}
