@@ -1,53 +1,112 @@
 import * as THREE from 'three'
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls"
-import { MTLLoader } from "three/examples/jsm/loaders/MTLLoader"
-import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader"
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
+import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader'
+import { MTLLoader } from 'three/examples/jsm/loaders/MTLLoader'
+import Stats from 'three/examples/jsm/libs/stats.module'
 
-let scene, camera;
+const scene = new THREE.Scene()
+scene.add(new THREE.AxesHelper(5))
 
-scene = new THREE.Scene();
-camera = new THREE.PerspectiveCamera( 20, window.innerWidth / window.innerHeight, 1, 2000 );
-camera.position.z = 250;
+const light = new THREE.PointLight(0xffffff, 1000)
+light.position.set(2.5, 7.5, 15)
+scene.add(light)
 
-var light = new THREE.AmbientLight(0xffffff);
-scene.add(light);
+const camera = new THREE.PerspectiveCamera(
+    75,
+    window.innerWidth / window.innerHeight,
+    0.1,
+    1000
+)
+camera.position.z = 3
 
-light = new THREE.HemisphereLight(0xffffff, 0x444444, 1.0);
-light.position.set(0, 1, 0);
-scene.add(light);
-
-var directionalLight = new THREE.DirectionalLight( 0xffeedd );
-directionalLight.position.set( 0, 1, 0 ).normalize();
-scene.add( directionalLight );
-
-var mesh = null;
-
-var mtlLoader = new MTLLoader();
-mtlLoader.load( 'models/abc.mtl', function( materials ) {
-  materials.preload();
-  var objLoader = new OBJLoader();
-  objLoader.setMaterials( materials );
-  objLoader.load( 'models/abc.obj', function ( object ) {    
-      mesh = object;
-      scene.add( mesh );
-  });
-});
-
-const canvas = document.querySelector(".webgl")
-const renderer = new THREE.WebGLRenderer({ canvas })
+const renderer = new THREE.WebGLRenderer()
 renderer.setSize(window.innerWidth, window.innerHeight)
-renderer.setClearColor(0xccccff);
+document.body.appendChild(renderer.domElement)
 
-renderer.setPixelRatio(2);
-renderer.render(scene, camera)
+const controls = new OrbitControls(camera, renderer.domElement)
+controls.enableDamping = true
 
-const controls = new OrbitControls(camera, canvas)
+const mtlLoader = new MTLLoader()
+mtlLoader.load(
+    'models/monkey.mtl',
+    (materials) => {
+        materials.preload()
 
-controls.addEventListener('change', renderer);
+        const objLoader = new OBJLoader()
+        objLoader.setMaterials(materials)
+        objLoader.load(
+            'models/monkey.obj',
+            (object) => {
+                scene.add(object)
+            },
+            (xhr) => {
+                console.log((xhr.loaded / xhr.total) * 100 + '% loaded')
+            },
+            (error) => {
+                console.log('An error happened')
+            }
+        )
+    },
+    (xhr) => {
+        console.log((xhr.loaded / xhr.total) * 100 + '% loaded')
+    },
+    (error) => {
+        console.log('An error happened')
+    }
+)
 
-animate();
+mtlLoader.load(
+    'models/monkeyTextured.mtl',
+    (materials) => {
+        materials.preload()
+
+        const objLoader = new OBJLoader()
+        objLoader.setMaterials(materials)
+        objLoader.load(
+            'models/monkeyTextured.obj',
+            (object) => {
+                object.position.x = 2.5
+                scene.add(object)
+            },
+            (xhr) => {
+                console.log((xhr.loaded / xhr.total) * 100 + '% loaded')
+            },
+            (error) => {
+                console.log('An error happened')
+            }
+        )
+    },
+    (xhr) => {
+        console.log((xhr.loaded / xhr.total) * 100 + '% loaded')
+    },
+    (error) => {
+        console.log('An error happened')
+    }
+)
+
+window.addEventListener('resize', onWindowResize, false)
+function onWindowResize() {
+    camera.aspect = window.innerWidth / window.innerHeight
+    camera.updateProjectionMatrix()
+    renderer.setSize(window.innerWidth, window.innerHeight)
+    render()
+}
+
+const stats = new Stats()
+document.body.appendChild(stats.dom)
 
 function animate() {
-    renderer.render( scene, camera );
-    requestAnimationFrame( animate );
+    requestAnimationFrame(animate)
+
+    controls.update()
+
+    render()
+
+    stats.update()
 }
+
+function render() {
+    renderer.render(scene, camera)
+}
+
+animate()
